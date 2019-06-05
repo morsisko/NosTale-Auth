@@ -66,7 +66,7 @@ You may call the `api/v1/auth/thin/codes` multiple times with the auth token obt
 To use the `code` in login packet you need to convert it to `SESSION_TOKEN`. The conversion is very simple. It changes the `code` into hex string.
 
 Lets say you got `code` equal to `a857263a-3fc1-4c60-ad78-9b6d9a2a0691`, after the conversion it will look like `61383537323633612D336663312D346336302D616437382D396236643961326130363931` because you convert characters from `code` element by element into hexstring, so:
-* `a` -> 97 -> 0x61
-* `8` -> 56 -> 0x38
+* `a` -> 97 -> 0x61 -> `61`
+* `8` -> 56 -> 0x38 -> `38`
 
-and so on
+and so on, so the string will look like `6138...`
