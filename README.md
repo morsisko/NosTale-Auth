@@ -16,3 +16,57 @@ That's how it looks like:
 * `0.9.3.3103` - Current version of client, may be obtained from the NostaleClientX.exe file version
 * `0` - const value
 * `MD5_STR(MD5_FILE("NostaleClientX.exe") + MD5_FILE("NostaleClient.exe"))` - MD5 generated from concatenation of MD5 strings of NostaleClientX.exe and NostaleClient.exe 
+
+# The useless stuff
+
+The client makes some useless stuff (at least - for us) like
+
+1. When you press "Start" The launcher generates mostly like pseudo-random GUID and saves it to the environment variable called `_TNT_SESSION_ID`
+2. Launcher launch client with `gf` parameter
+3. Client read the `_TNT_SESSION_ID` value from the system environment variables, the value is further used to identify the client in the launcher (in case when you run multiple NosTale clients)
+4. Now the client and launcher talks over newly created [pipe](https://docs.microsoft.com/en-us/windows/desktop/ipc/pipes) using JSON-RPC protocol.
+5. The client query the launcher using the `_TNT_SESSION_ID` value, the client request info such as `USERNAME` and `SESSION_GUID`, then it translates the `SESSION_GUID` using simple algorithm and send it along with login packet
+
+# Core part
+
+## Auth
+
+To obtain the token first you need to auth yourself. To do so you need to send `POST` request to `https://spark.gameforge.com/api/v1/auth/thin/sessions`, you send it `only once`.
+
+In the request header you need to specify `TNT-Installation-Id` from the windows registry
+In the body of the request you need to specify `JSON` content:
+* `gfLang` - example: `pl`
+* `identity` - your username
+* `locale` - example: `pl_PL`
+* `password` - your password
+* `platformGameId` - probably const for NosTale: `dd4e22d6-00d1-44b9-8126-d8b40e0cd7c9`
+
+In the response you will get `JSON` content:
+* `token` - value that is used to further API request, that is NOT that one that use use in login packet
+* `platformGameAccountId` - your accound ID
+
+## Finally, the SESSION_GUID
+
+To obtain the right token you need to make `POST` request to `https://spark.gameforge.com/api/v1/auth/thin/codes`
+In the request header you need to specify:
+* `TNT-Installation-Id` - value from windows registry
+* `User-Agent` - Changed over time, eg. `TNTClientMS2/1.3.39`
+* `Authorization` - `Bearer ` + `TOKEN_FROM_AUTH_REQUEST`
+
+In the request `JSON` body you need to specify:
+* `platformGameAccountId` - the value from auth request
+
+In the response you get `JSON` content with:
+* `code` - The value you are looking for 
+
+You may call the `api/v1/auth/thin/codes` multiple times with the auth token obtained from `api/v1/auth/thin/sessions`
+
+## The final conversion
+
+To use the `code` in login packet you need to convert it. The conversion is very simple. It changes the `code` into hex string.
+
+Lets say you got `code` equal to `a857263a-3fc1-4c60-ad78-9b6d9a2a0691`, after the conversion it will look like `61383537323633612D336663312D346336302D616437382D396236643961326130363931` because you convert characters from `code` element by element into hexstring, so:
+* `a` -> 97 -> 0x61
+* `8` -> 56 -> 0x38
+
+and so on
