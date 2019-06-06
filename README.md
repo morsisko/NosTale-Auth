@@ -2,7 +2,7 @@
 Simple library that lets you generate "magic" value for the NoS0577 login packet
 
 # The packet
-New login packet `NoS0577` is used when you login with GameForge launcher
+New login packet `NoS0577` is used when you login with Gameforge launcher
 
 That's how it looks like:
 `"NoS0577 " + SESSION_TOKEN + " " + username + " " + INSTALLATION_GUID + " 003662BF" + char(0xB) + "0.9.3.3103" + " 0 " + MD5_STR(MD5_FILE("NostaleClientX.exe") + MD5_FILE("NostaleClient.exe"))`
@@ -15,17 +15,17 @@ That's how it looks like:
 * `char(0xB)` - Single character with ASCII code `0xB`
 * `0.9.3.3103` - Current version of client, may be obtained from the NostaleClientX.exe file version
 * `0` - const value
-* `MD5_STR(MD5_FILE("NostaleClientX.exe") + MD5_FILE("NostaleClient.exe"))` - MD5 generated from concatenation of MD5 strings of NostaleClientX.exe and NostaleClient.exe 
+* `MD5_STR(MD5_FILE("NostaleClientX.exe") + MD5_FILE("NostaleClient.exe"))` - MD5 generated from concatenation of MD5 uppercase strings of NostaleClientX.exe and NostaleClient.exe 
 
 # The useless stuff
 
 The client makes some useless stuff (at least - for us) like
 
 1. When you press "Start" The launcher generates mostly like pseudo-random GUID and saves it to the environment variable called `_TNT_SESSION_ID`
-2. Launcher launch client with `gf` parameter
-3. Client read the `_TNT_SESSION_ID` value from the system environment variables, the value is further used to identify the client in the launcher (in case when you run multiple NosTale clients)
-4. Now the client and launcher talks over newly created [pipe](https://docs.microsoft.com/en-us/windows/desktop/ipc/pipes) using JSON-RPC protocol.
-5. The client query the launcher using the `_TNT_SESSION_ID` value, the client request info such as `USERNAME` and `code`, then it translates the `code` into `SESSION_TOKEN` using simple algorithm and send it along with login packet
+2. Launcher launches the client with `gf` parameter
+3. Client reads the `_TNT_SESSION_ID` value from the system environment variables, the value is further used to identify the client in the launcher (in case you run multiple NosTale clients)
+4. Now the client and the launcher talk over newly created [pipe](https://docs.microsoft.com/en-us/windows/desktop/ipc/pipes) using JSON-RPC protocol.
+5. The client queries the launcher using the `_TNT_SESSION_ID` value, the client requests info such as `USERNAME` and `code`, then it translates the `code` into `SESSION_TOKEN` using simple algorithm and sends it along with login packet
 
 # Core part
 
@@ -42,8 +42,8 @@ In the body of the request you need to specify `JSON` content:
 * `platformGameId` - probably const for NosTale: `dd4e22d6-00d1-44b9-8126-d8b40e0cd7c9`
 
 In the response you will get `JSON` content:
-* `token` - value that is used to further API request, that is NOT that one to use in login packet
-* `platformGameAccountId` - your accound ID
+* `token` - value that is used later in API requests, it is NOT that one to use in login packet
+* `platformGameAccountId` - your account ID
 
 ## Almost done
 
