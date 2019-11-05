@@ -49,7 +49,7 @@ In the response you will get `JSON` content:
 To obtain the right token you need to make `POST` request to `https://spark.gameforge.com/api/v1/auth/thin/codes`
 In the request header you need to specify:
 * `TNT-Installation-Id` - value from windows registry
-* `User-Agent` - Changes over time, eg. `TNTClientMS2/1.3.39`
+* `User-Agent` - Changes over time, eg. `GameforgeClient/2.0.43`
 * `Authorization` - `Bearer ` + `TOKEN_FROM_AUTH_REQUEST`
 
 In the request `JSON` body you need to specify:
