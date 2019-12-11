@@ -7,7 +7,7 @@ class NtLauncher:
         self.gfLang = gfLang
         self.installation_id = installation_id
         self.token = None
-        self.platformGameAccountId = None
+        self.platformUserId = None
 
     def auth(self, username, password):
         self.username = username
@@ -15,7 +15,7 @@ class NtLauncher:
 
         URL = "https://spark.gameforge.com/api/v1/auth/thin/sessions"
         HEADERS = {
-            "User-Agent" : "Mozilla/5.0 (Windows NT 6.3; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3325.181 Safari/537.36",
+            "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36",
             "TNT-Installation-Id" : self.installation_id,
             "Origin" : "spark://www.gameforge.com"
         }
@@ -34,21 +34,42 @@ class NtLauncher:
         
         response = r.json()
         self.token = response["token"]
-        self.platformGameAccountId = response["platformGameAccountId"]
+        self.platformUserId = response["platformUserId"]
 
         return True
+        
+    def getAccounts(self):
+        if not self.token or not self.platformUserId:
+            return False
+        
+        URL = "https://spark.gameforge.com/api/v1/user/accounts"
+
+        HEADERS = {
+            "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36",
+            "TNT-Installation-Id" : self.installation_id,
+            "Origin" : "spark://www.gameforge.com",
+            "Authorization" : "Bearer {}".format(self.token),
+            "Connection" : "Keep-Alive"
+        }
+
+        r = requests.get(URL, headers=HEADERS)
+
+        if r.status_code != 200:
+            return False
+
+        return list(r.json().keys())
 
     def _convertToken(self, guid):
         return binascii.hexlify(guid.encode()).decode()
 
-    def getToken(self):
-        if not self.token or not self.platformGameAccountId:
+    def getToken(self, account):
+        if not self.token or not self.platformUserId:
             return False
         
         URL = "https://spark.gameforge.com/api/v1/auth/thin/codes"
 
         HEADERS = {
-            "User-Agent" : "TNTClientMS2/1.3.39",
+            "User-Agent" : "GameforgeClient/2.0.48",
             "TNT-Installation-Id" : self.installation_id,
             "Origin" : "spark://www.gameforge.com",
             "Authorization" : "Bearer {}".format(self.token),
@@ -56,7 +77,7 @@ class NtLauncher:
         }
 
         CONTENT = {
-            "platformGameAccountId" : self.platformGameAccountId
+            "platformGameAccountId" : account
         }
 
         r = requests.post(URL, headers=HEADERS, json=CONTENT)
