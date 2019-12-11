@@ -5,8 +5,9 @@ api = loginapi.NtLauncher(locale="pl_PL", gfLang="pl", installation_id="5ea61643
 if not api.auth(username="admin", password="admin"):
     print("Couldn't auth!")
     exit()
-
-token = api.getToken()
+    
+accounts = api.getAccounts()
+token = api.getToken(accounts[0])
 
 if token:
     print(token)
