@@ -7,7 +7,14 @@ if not api.auth(username="admin", password="admin"):
     exit()
     
 accounts = api.getAccounts()
-token = api.getToken(accounts[0])
+if len(accounts) == 0:
+    print("You don't have any any account")
+    
+for uid, displayName in accounts:
+    print("Account key:", uid, "Account name:", displayName)
+
+uid, displayName = accounts[0]
+token = api.getToken(uid)
 
 if token:
     print(token)
