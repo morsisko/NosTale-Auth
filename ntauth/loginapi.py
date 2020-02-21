@@ -56,13 +56,19 @@ class NtLauncher:
 
         if r.status_code != 200:
             return False
+            
+        accounts = []
+        response = r.json()
+        
+        for key in response.keys():
+            accounts.append((key, response[key]["displayName"]))
 
-        return list(r.json().keys())
+        return accounts
 
     def _convertToken(self, guid):
         return binascii.hexlify(guid.encode()).decode()
 
-    def getToken(self, account):
+    def getToken(self, account, raw=False):
         if not self.token or not self.platformUserId:
             return False
         
@@ -85,4 +91,7 @@ class NtLauncher:
         if r.status_code != 201:
             return False
 
+        if raw:
+            return r.json()["code"]
+        
         return self._convertToken(r.json()["code"])
