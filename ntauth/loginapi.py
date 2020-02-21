@@ -1,8 +1,10 @@
 import requests
 import binascii
+import hashlib
+import uuid
 
 class NtLauncher:
-    def __init__(self, locale, gfLang, installation_id):
+    def __init__(self, locale, gfLang, installation_id=None):
         self.locale = locale
         self.gfLang = gfLang
         self.installation_id = installation_id
@@ -12,6 +14,10 @@ class NtLauncher:
     def auth(self, username, password):
         self.username = username
         self.password = password
+        
+        if not self.installation_id:
+            m = hashlib.md5((username + password).encode()).digest()
+            self.installation_id = str(uuid.UUID(bytes_le=m)) #it generates just unique uuid for username+password, so others who use this library won't have the same installation_id
 
         URL = "https://spark.gameforge.com/api/v1/auth/thin/sessions"
         HEADERS = {
