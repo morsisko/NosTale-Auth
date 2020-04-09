@@ -9,7 +9,6 @@ class NtLauncher:
         self.gfLang = gfLang
         self.installation_id = installation_id
         self.token = None
-        self.platformUserId = None
 
     def auth(self, username, password):
         self.username = username
@@ -19,19 +18,17 @@ class NtLauncher:
             m = hashlib.md5((username + password).encode()).digest()
             self.installation_id = str(uuid.UUID(bytes_le=m)) #it generates just unique uuid for username+password, so others who use this library won't have the same installation_id
 
-        URL = "https://spark.gameforge.com/api/v1/auth/thin/sessions"
+        URL = "https://spark.gameforge.com/api/v1/auth/sessions"
         HEADERS = {
             "User-Agent" : "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36",
             "TNT-Installation-Id" : self.installation_id,
-            "Origin" : "spark://www.gameforge.com"
+            "Origin" : "spark://www.gameforge.com",
         }
 
         CONTENT = {
-            "gfLang" : self.gfLang,
-            "identity" : self.username,
+            "email" : self.username,
             "locale" : self.locale,
             "password" : self.password,
-            "platformGameId" : "dd4e22d6-00d1-44b9-8126-d8b40e0cd7c9"
         }
 
         r = requests.post(URL, headers=HEADERS, json=CONTENT)
@@ -40,12 +37,11 @@ class NtLauncher:
         
         response = r.json()
         self.token = response["token"]
-        self.platformUserId = response["platformUserId"]
 
         return True
         
     def getAccounts(self):
-        if not self.token or not self.platformUserId:
+        if not self.token:
             return False
         
         URL = "https://spark.gameforge.com/api/v1/user/accounts"
@@ -75,7 +71,7 @@ class NtLauncher:
         return binascii.hexlify(guid.encode()).decode()
 
     def getToken(self, account, raw=False):
-        if not self.token or not self.platformUserId:
+        if not self.token:
             return False
         
         URL = "https://spark.gameforge.com/api/v1/auth/thin/codes"
