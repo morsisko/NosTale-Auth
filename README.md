@@ -30,19 +30,16 @@ The client makes some useless stuff (at least - for us) like
 
 ## Auth
 
-To obtain the token first you need to auth yourself. To do so you need to send `POST` request to `https://spark.gameforge.com/api/v1/auth/thin/sessions`, you send it `only once`.
+To obtain the token first you need to auth yourself. To do so you need to send `POST` request to `https://spark.gameforge.com/api/v1/auth/sessions`, you send it `only once`.
 
 In the request header you need to specify `TNT-Installation-Id` from the windows registry.
 In the body of the request you need to specify `JSON` content:
-* `gfLang` - example: `pl`
-* `identity` - your username
+* `email` - your email
 * `locale` - example: `pl_PL`
 * `password` - your password
-* `platformGameId` - probably const for NosTale: `dd4e22d6-00d1-44b9-8126-d8b40e0cd7c9`
 
 In the response you will get `JSON` content:
 * `token` - value that is used later in API requests, it is NOT that one to use in login packet
-* `platformUserId` - your user ID
 
 ## Accounts
 
