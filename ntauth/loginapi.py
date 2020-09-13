@@ -77,7 +77,7 @@ class NtLauncher:
         URL = "https://spark.gameforge.com/api/v1/auth/thin/codes"
 
         HEADERS = {
-            "User-Agent" : "GameforgeClient/2.0.48",
+            "User-Agent" : "GameforgeClient/2.1.12",
             "TNT-Installation-Id" : self.installation_id,
             "Origin" : "spark://www.gameforge.com",
             "Authorization" : "Bearer {}".format(self.token),
