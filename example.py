@@ -1,6 +1,6 @@
-from ntauth import loginapi
+from nosauth import api
 
-api = loginapi.NtLauncher(locale="pl_PL", gfLang="pl")
+api = api.NtLauncher(locale="pl_PL", gfLang="pl")
 
 if not api.auth(username="admin", password="admin"):
     print("Couldn't auth!")
