@@ -1,6 +1,11 @@
 # NosTale-Auth
 Simple library that lets you generate "magic" value for the NoS0577 login packet
 
+# Python installation
+`pip install nosauth`
+
+Please refer to the example.py for working example
+
 # The packet
 New login packet `NoS0577` is used when you login with Gameforge launcher
 
