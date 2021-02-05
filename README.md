@@ -29,6 +29,65 @@ The client makes some useless stuff (at least - for us) like
 
 # Core part
 
+## User-Agent
+
+There are three types of User-Agents. For the majority of requests you will use the Chromium one (for example this specified in `Accounts` section below).
+For the second and third type the User-Agent looks like: `Chrome/Cversion (MAGIC) GameforgeClient/2.1.22`, for example `Chrome/C2.1.22.784 (6a28914b) GameforgeClient/2.1.22`
+
+Where the `MAGIC` is:
+
+### For the second type
+
+The second type of User-Agent is used for example during request to `/api/v1/patching/download/nostale/default?branchToken`. There are instructions how to generate this user-agent:
+
+NOTE: The ouput of all hashing algorithms is hexlified string, not raw bytes!
+Firsly, you need to grab first number from your `TNT-Installation-Id`.
+
+In case the first number is even `(number % 2 == 0)` or there are only letters in your `TNT-Installation-Id`:
+`MAGIC` = first 8 characters from left of `SHA256(SHA256(Cert) + SHA1(version) + SHA256(TNT-Installation-Id))`
+
+Otherwise (when the first number is odd):
+`MAGIC` = the last 8 characters of `SHA256(SHA1(Cert) + SHA256(version) + SHA1(TNT-Installation-Id))`
+
+### For te third type
+
+The third type of User-Agent is used for example while getting the auth code, so it's probably the most important one for you.
+
+NOTE: The ouput of all hashing algorithms is hexlified string, not raw bytes!
+Firsly, you need to grab first number from your `TNT-Installation-Id`.
+
+In case the first number is even `(number % 2 == 0)` or there are only letters in your `TNT-Installation-Id`:
+`MAGIC` = 2 first chars of your account id + first 8 characters from left of `SHA256(SHA256(Cert) + SHA1(version) + SHA256(TNT-Installation-Id) + SHA1(account-id))`
+
+Otherwise (when the first number is odd):
+`MAGIC` = 2 first chars of your account id + the last 8 characters of `SHA256(SHA1(Cert) + SHA256(version) + SHA1(TNT-Installation-Id) + SHA256(account-id))`
+
+
+Where:
+* `Cert` - Gameforge PEM cert embedded into launcher
+* `version` - The current version of the launcher, for example "C2.1.22.784"
+* `account-id` - Id of the account you are trying to log-in 
+
+### Obtaining token example:
+This is an example of obtaining the third type of token with following data:
+* `version` = C2.1.22.784
+* `Cert` = cert.pem file from this repository
+* `account-id` = fb50ca7a-6ba2-11eb-9439-0242ac130002
+* `TNT-Installation-Id` = a777c5e7-c9ac-407b-99b4-1a5934137f43
+
+The first number of `TNT-Installation-Id` is 7, it is odd number so:
+`SHA1(Cert)` = 6a62b8e71fac63afc5abcb927a63f83aaa2ccb5b
+`SHA256(version) = SHA256("C2.1.22.784")` = bb3dc2ed5d66d85d099d97513c52fbe699e61e5e8c71f91b9137566514c04e51
+`SHA1(TNT-Installation-Id) = SHA1("a777c5e7-c9ac-407b-99b4-1a5934137f43")` = 8b3c8dbe01fbb1d18ec288b74f072915f8d268b4
+`SHA256(Account-Id) = SHA256("fb50ca7a-6ba2-11eb-9439-0242ac130002")` = bcabe70d5883ceead32fe116322824be320b18a98a241a5370a5de5e34763697
+`2 first chars of account id` = fb
+
+`SHA256(SHA1(Cert) + SHA256(version) + SHA1(TNT-Installation-Id) + SHA256(account-id)) = SHA256(6a62b8e71fac63afc5abcb927a63f83aaa2ccb5b + bb3dc2ed5d66d85d099d97513c52fbe699e61e5e8c71f91b9137566514c04e51 + 8b3c8dbe01fbb1d18ec288b74f072915f8d268b4 + bcabe70d5883ceead32fe116322824be320b18a98a241a5370a5de5e34763697)` = 825e786ede7e1421cda70988d9e493a4adeb9ce2986a48848763bd5cb506b95a
+`Last 8 characters of the previous one` = b506b95a
+
+Result = `2 first chars of account id` + `Last 8 characters of the previous one` = fbb506b95a
+
+
 ## Auth
 
 To obtain the token first you need to auth yourself. To do so you need to send `POST` request to `https://spark.gameforge.com/api/v1/auth/sessions`, you send it `only once`.
@@ -58,7 +117,7 @@ In the response you get `JSON` array of all the accounts. Top level keys in the 
 To obtain the right token you need to make `POST` request to `https://spark.gameforge.com/api/v1/auth/thin/codes`
 In the request header you need to specify:
 * `TNT-Installation-Id` - value from windows registry
-* `User-Agent` - Changes over time, eg. `GameforgeClient/2.0.48`
+* `User-Agent` - This is the third type token, for the details look at the `User-Agent` paragraph at the beginning of the document, eg. `Chrome/C2.1.22.784 (fbb506b95a) GameforgeClient/2.1.22`
 * `Authorization` - `Bearer ` + `TOKEN_FROM_AUTH_REQUEST`
 
 In the request `JSON` body you need to specify:
