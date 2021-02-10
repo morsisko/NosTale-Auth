@@ -1,6 +1,11 @@
 # NosTale-Auth
 Simple library that lets you generate "magic" value for the NoS0577 login packet
 
+# Python installation
+`pip install nosauth`
+
+Please refer to the example.py for working example
+
 # The packet
 New login packet `NoS0577` is used when you login with Gameforge launcher
 
@@ -44,12 +49,12 @@ NOTE: The ouput of all hashing algorithms is hexlified string, not raw bytes!
 Firsly, you need to grab first number from your `TNT-Installation-Id`.
 
 In case the first number is even `(number % 2 == 0)` or there are only letters in your `TNT-Installation-Id`:
-`MAGIC` = first 8 characters from left of `SHA256(SHA256(Cert) + SHA1(version) + SHA256(TNT-Installation-Id))`
+* `MAGIC` = first 8 characters from left of `SHA256(SHA256(Cert) + SHA1(version) + SHA256(TNT-Installation-Id))`
 
 Otherwise (when the first number is odd):
-`MAGIC` = the last 8 characters of `SHA256(SHA1(Cert) + SHA256(version) + SHA1(TNT-Installation-Id))`
+* `MAGIC` = the last 8 characters of `SHA256(SHA1(Cert) + SHA256(version) + SHA1(TNT-Installation-Id))`
 
-### For te third type
+### For the third type
 
 The third type of User-Agent is used for example while getting the auth code, so it's probably the most important one for you.
 
@@ -57,10 +62,10 @@ NOTE: The ouput of all hashing algorithms is hexlified string, not raw bytes!
 Firsly, you need to grab first number from your `TNT-Installation-Id`.
 
 In case the first number is even `(number % 2 == 0)` or there are only letters in your `TNT-Installation-Id`:
-`MAGIC` = 2 first chars of your account id + first 8 characters from left of `SHA256(SHA256(Cert) + SHA1(version) + SHA256(TNT-Installation-Id) + SHA1(account-id))`
+* `MAGIC` = 2 first chars of your account id + first 8 characters from left of `SHA256(SHA256(Cert) + SHA1(version) + SHA256(TNT-Installation-Id) + SHA1(account-id))`
 
 Otherwise (when the first number is odd):
-`MAGIC` = 2 first chars of your account id + the last 8 characters of `SHA256(SHA1(Cert) + SHA256(version) + SHA1(TNT-Installation-Id) + SHA256(account-id))`
+* `MAGIC` = 2 first chars of your account id + the last 8 characters of `SHA256(SHA1(Cert) + SHA256(version) + SHA1(TNT-Installation-Id) + SHA256(account-id))`
 
 
 Where:
@@ -76,16 +81,14 @@ This is an example of obtaining the third type of token with following data:
 * `TNT-Installation-Id` = a777c5e7-c9ac-407b-99b4-1a5934137f43
 
 The first number of `TNT-Installation-Id` is 7, it is odd number so:
-`SHA1(Cert)` = 6a62b8e71fac63afc5abcb927a63f83aaa2ccb5b
-`SHA256(version) = SHA256("C2.1.22.784")` = bb3dc2ed5d66d85d099d97513c52fbe699e61e5e8c71f91b9137566514c04e51
-`SHA1(TNT-Installation-Id) = SHA1("a777c5e7-c9ac-407b-99b4-1a5934137f43")` = 8b3c8dbe01fbb1d18ec288b74f072915f8d268b4
-`SHA256(Account-Id) = SHA256("fb50ca7a-6ba2-11eb-9439-0242ac130002")` = bcabe70d5883ceead32fe116322824be320b18a98a241a5370a5de5e34763697
-`2 first chars of account id` = fb
-
-`SHA256(SHA1(Cert) + SHA256(version) + SHA1(TNT-Installation-Id) + SHA256(account-id)) = SHA256(6a62b8e71fac63afc5abcb927a63f83aaa2ccb5b + bb3dc2ed5d66d85d099d97513c52fbe699e61e5e8c71f91b9137566514c04e51 + 8b3c8dbe01fbb1d18ec288b74f072915f8d268b4 + bcabe70d5883ceead32fe116322824be320b18a98a241a5370a5de5e34763697)` = 825e786ede7e1421cda70988d9e493a4adeb9ce2986a48848763bd5cb506b95a
-`Last 8 characters of the previous one` = b506b95a
-
-Result = `2 first chars of account id` + `Last 8 characters of the previous one` = fbb506b95a
+* `SHA1(Cert)` = 6a62b8e71fac63afc5abcb927a63f83aaa2ccb5b
+* `SHA256(version) = SHA256("C2.1.22.784")` = bb3dc2ed5d66d85d099d97513c52fbe699e61e5e8c71f91b9137566514c04e51
+* `SHA1(TNT-Installation-Id) = SHA1("a777c5e7-c9ac-407b-99b4-1a5934137f43")` = 8b3c8dbe01fbb1d18ec288b74f072915f8d268b4
+* `SHA256(Account-Id) = SHA256("fb50ca7a-6ba2-11eb-9439-0242ac130002")` = bcabe70d5883ceead32fe116322824be320b18a98a241a5370a5de5e34763697
+* `2 first chars of account id` = fb
+* `SHA256(SHA1(Cert) + SHA256(version) + SHA1(TNT-Installation-Id) + SHA256(account-id)) = SHA256(6a62b8e71fac63afc5abcb927a63f83aaa2ccb5b + bb3dc2ed5d66d85d099d97513c52fbe699e61e5e8c71f91b9137566514c04e51 + 8b3c8dbe01fbb1d18ec288b74f072915f8d268b4 + bcabe70d5883ceead32fe116322824be320b18a98a241a5370a5de5e34763697)` = 825e786ede7e1421cda70988d9e493a4adeb9ce2986a48848763bd5cb506b95a
+* `Last 8 characters of the previous one` = b506b95a
+* Result = `2 first chars of account id` + `Last 8 characters of the previous one` = fbb506b95a
 
 
 ## Auth
