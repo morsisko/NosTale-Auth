@@ -9,7 +9,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="nosauth",
-    version="0.1.0",
+    version="0.1.1",
     description="Library that lets you obtain auth token so you can login to NosTale official servers",
     long_description=README,
     long_description_content_type="text/markdown",
@@ -24,4 +24,6 @@ setup(
     ],
     packages=["nosauth"],
     install_requires=["requests"],
+    package_data={"nosauth": ["cert.pem"]},
+    include_package_data=True,
 )
