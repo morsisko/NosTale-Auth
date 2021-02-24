@@ -2,6 +2,8 @@ import requests
 import binascii
 import hashlib
 import uuid
+import datetime
+import random
 
 try:
     import importlib.resources as pkg_resources
@@ -30,7 +32,11 @@ class NtLauncher:
             self.gfVersion = NtLauncher.DEFAULT_GF_VERSION
             
         if self.cert == None:
-            self.cert = pkg_resources.read_binary(__package__, "cert.pem")
+            data = pkg_resources.read_binary(__package__, "all_certs.pem")
+            start = data.find(b"-----BEGIN CERTIFICATE-----")
+            end = data.find(b"-----END CERTIFICATE-----", start)
+
+            self.cert = data[start:end+1+len(b"-----END CERTIFICATE-----")]
 
     def auth(self, username, password):
         self.username = username
@@ -39,6 +45,9 @@ class NtLauncher:
         if not self.installation_id:
             m = hashlib.md5((username + password).encode()).digest()
             self.installation_id = str(uuid.UUID(bytes_le=m)) #it generates just unique uuid for username+password, so others who use this library won't have the same installation_id
+            
+        if not self.send_start_time():
+            return False
 
         URL = "https://spark.gameforge.com/api/v1/auth/sessions"
         HEADERS = {
@@ -60,6 +69,57 @@ class NtLauncher:
         response = r.json()
         self.token = response["token"]
         return True
+        
+    def send_start_time(self):
+        HEADERS = {
+            "Host" : "events.gameforge.com",
+            "User-Agent" : "GameforgeClient/" + self.gfVersion,
+            "Content-Type" : "application/json",
+            "Connection" : "Keep-Alive"
+        }
+
+        PAYLOAD = """{
+    "client_installation_id": "%INSTALLATION_ID%",
+    "client_locale": "pol_pol",
+    "client_session_id": "%SESSION_ID%",
+    "client_version_info": {
+        "branch": "master",
+        "commit_id": "27942713",
+        "version": "%CHROME_VERSION%"
+    },
+    "id": 0,
+    "localtime": "%LOCAL_TIME%",
+    "start_count": 1,
+    "start_time": %START_TIME%,
+    "type": "start_time"
+}
+        """
+        
+        payload = PAYLOAD.replace("%INSTALLATION_ID%", self.installation_id)
+        payload = payload.replace("%SESSION_ID%", str(uuid.uuid4()))
+        payload = payload.replace("%CHROME_VERSION%", self.chromeVersion[1:])
+        
+        def rreplace(s, old, new, occurrence):
+            li = s.rsplit(old, occurrence)
+            return new.join(li)
+
+        eu = datetime.timezone(datetime.timedelta(hours=1)) #Eu timezone
+        date = datetime.datetime.now(eu)
+        date = date.replace(microsecond=0)
+        
+        payload = payload.replace("%LOCAL_TIME%", rreplace(date.isoformat(), ":", "", 1))
+        payload = payload.replace("%START_TIME%", str(random.randint(1500, 10000)))
+        
+        with pkg_resources.path(__package__, "all_certs.pem") as path:
+            certPath = str(path)
+        
+        r = requests.post("https://events.gameforge.com", headers=HEADERS, data=payload, cert=certPath, verify=certPath)
+        
+        if r.status_code != 200:
+            return False
+            
+        return True
+        
         
     def getAccounts(self):
         if not self.token:
