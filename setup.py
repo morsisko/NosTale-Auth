@@ -9,7 +9,7 @@ README = (HERE / "README.md").read_text()
 
 setup(
     name="nosauth",
-    version="0.1.3",
+    version="0.1.4",
     description="Library that lets you obtain auth token so you can login to NosTale official servers",
     long_description=README,
     long_description_content_type="text/markdown",
