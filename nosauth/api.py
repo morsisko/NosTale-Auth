@@ -13,8 +13,8 @@ except ImportError:
 
 class NtLauncher:
     BROWSER_USERAGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
-    DEFAULT_CHROME_VERSION = "C2.1.22.784"
-    DEFAULT_GF_VERSION = "2.1.22"
+    DEFAULT_CHROME_VERSION = "C2.2.17.1568"
+    DEFAULT_GF_VERSION = "2.2.17"
     
     def __init__(self, locale, gfLang, installation_id=None, chromeVersion=None, gfVersion=None, cert=None):
         self.locale = locale
