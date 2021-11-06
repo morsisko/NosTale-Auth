@@ -13,8 +13,8 @@ except ImportError:
 
 class NtLauncher:
     BROWSER_USERAGENT = "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36"
-    DEFAULT_CHROME_VERSION = "C2.2.17.1568"
-    DEFAULT_GF_VERSION = "2.2.17"
+    DEFAULT_CHROME_VERSION = "C2.2.19.1700"
+    DEFAULT_GF_VERSION = "2.2.19"
     
     def __init__(self, locale, gfLang, installation_id=None, chromeVersion=None, gfVersion=None, cert=None):
         self.locale = locale
@@ -210,7 +210,8 @@ class NtLauncher:
         }
 
         CONTENT = {
-            "platformGameAccountId" : account
+            "platformGameAccountId" : account,
+            "gsid" : "{}-{}".format(uuid.uuid4(), random.randint(1000, 9999))
         }
 
         r = requests.post(URL, headers=HEADERS, json=CONTENT)
