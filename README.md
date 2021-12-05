@@ -125,6 +125,7 @@ In the request header you need to specify:
 
 In the request `JSON` body you need to specify:
 * `platformGameAccountId` - the id of selected account from previous section
+* `gsid` - field consisting of `client_session_id` + `-` + `random 4 digit number`. The `client_session_id` can be random, but preferably it should be the same as the `client_session_id` generated for `start_time` request sent to `https://events.gameforge.com`
 
 In the response you get `JSON` content with:
 * `code` - The value you are looking for 
