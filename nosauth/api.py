@@ -22,7 +22,7 @@ class NtLauncher:
         self.username = ''
         self.password = ''
         self.locale = locale
-        self.gfLang = gf_lang
+        self.gf_lang = gf_lang
         self.installation_id = installation_id
         self.chrome_version = chrome_version
         self.gf_version = gf_version
@@ -77,7 +77,7 @@ class NtLauncher:
     def send_start_time(self):
         HEADERS = {
             'Host': 'events.gameforge.com',
-            'User-Agent': f'GameforgeClient/{self.gfVersion}',
+            'User-Agent': f'GameforgeClient/{self.gf_version}',
             'Content-Type': 'application/json',
             'Connection': 'Keep-Alive',
         }
