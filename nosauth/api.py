@@ -1,9 +1,11 @@
-import requests
+"""Api file."""
 import binascii
-import hashlib
-import uuid
 import datetime
+import hashlib
 import random
+import uuid
+
+import requests
 
 try:
     import importlib.resources as pkg_resources
@@ -13,12 +15,15 @@ except ImportError:
 
 
 class NtLauncher:
+    """Nt launcher class."""
+
     BROWSER_USERAGENT = 'Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) ' \
                         'Chrome/72.0.3626.121 Safari/537.36'
     DEFAULT_CHROME_VERSION = 'C2.2.19.1700'
     DEFAULT_GF_VERSION = '2.2.19'
     
     def __init__(self, locale, gf_lang, installation_id=None, chrome_version=None, gf_version=None, cert=None):
+        """Init func."""
         self.username = ''
         self.password = ''
         self.locale = locale
@@ -30,7 +35,7 @@ class NtLauncher:
         self.token = None
         
         if not self.chrome_version:
-            self.chromeVersion = NtLauncher.DEFAULT_CHROME_VERSION
+            self.chrome_version = NtLauncher.DEFAULT_CHROME_VERSION
             
         if not self.gf_version:
             self.gf_version = NtLauncher.DEFAULT_GF_VERSION
@@ -42,7 +47,7 @@ class NtLauncher:
 
             self.cert = data[start:end+1+len(b'-----END CERTIFICATE-----')]
 
-    def auth(self, username, password):
+    def auth(self, username, password):  # noqa: D102
         self.username = username
         self.password = password
         
@@ -57,7 +62,7 @@ class NtLauncher:
         HEADERS = {
             'User-Agent': NtLauncher.BROWSER_USERAGENT,
             'TNT-Installation-Id': self.installation_id,
-            'Origin': "spark://www.gameforge.com",
+            'Origin': 'spark://www.gameforge.com',
         }
 
         CONTENT = {
@@ -74,7 +79,7 @@ class NtLauncher:
         self.token = response['token']
         return True
         
-    def send_start_time(self):
+    def send_start_time(self):  # noqa: D102
         HEADERS = {
             'Host': 'events.gameforge.com',
             'User-Agent': f'GameforgeClient/{self.gf_version}',
@@ -99,9 +104,9 @@ class NtLauncher:
 }
         """
         
-        payload = PAYLOAD.replace("%INSTALLATION_ID%", self.installation_id)
-        payload = payload.replace("%SESSION_ID%", str(uuid.uuid4()))
-        payload = payload.replace("%CHROME_VERSION%", self.chromeVersion[1:])
+        payload = PAYLOAD.replace('%INSTALLATION_ID%', self.installation_id)
+        payload = payload.replace('%SESSION_ID%', str(uuid.uuid4()))
+        payload = payload.replace('%CHROME_VERSION%', self.chrome_version[1:])
         
         def rreplace(s, old, new, occurrence):
             li = s.rsplit(old, occurrence)
@@ -114,20 +119,20 @@ class NtLauncher:
         payload = payload.replace('%LOCAL_TIME%', rreplace(date.isoformat(), ":", "", 1))
         payload = payload.replace('%START_TIME%', str(random.randint(1500, 10000)))
         
-        with pkg_resources.path(__package__, "all_certs.pem") as path:
-            certPath = str(path)
+        with pkg_resources.path(__package__, 'all_certs.pem') as path:
+            cert_path = str(path)
         
         r = requests.post(
             'https://events.gameforge.com',
             headers=HEADERS, data=payload,
-            cert=certPath, verify=certPath)
+            cert=cert_path, verify=cert_path)
         
         if r.status_code != 200:
             return False
             
         return True
         
-    def get_accounts(self):
+    def get_accounts(self):  # noqa: D102
         if not self.token:
             return False
         
@@ -154,53 +159,57 @@ class NtLauncher:
 
         return accounts
 
-    def _convert_token(self, guid):
+    def _convert_token(self, guid):  # noqa: D102
         return binascii.hexlify(guid.encode()).decode()
         
-    def get_first_number(self, uuid):
+    def get_first_number(self, uuid):  # noqa: D102
         for char in uuid:
             if char.isdigit():
                 return char
         return None
         
-    def generate_second_type_user_agent_magic(self):
+    def generate_second_type_user_agent_magic(self):  # noqa: D102
         firstLetter = self.get_first_number(self.installation_id)
         
         if not firstLetter or not int(firstLetter) % 2:
-            hashOfCert = hashlib.sha256(self.cert).hexdigest()
-            hashOfVersion = hashlib.sha1(self.chromeVersion.encode('ascii')).hexdigest()
-            hashOfInstallationId = hashlib.sha256(self.installation_id.encode('ascii')).hexdigest()
-            hashOfSum = hashlib.sha256((hashOfCert + hashOfVersion + hashOfInstallationId).encode('ascii')).hexdigest()
-            return hashOfSum[:8]
+            hash_of_cert = hashlib.sha256(self.cert).hexdigest()
+            hash_of_version = hashlib.sha1(self.chrome_version.encode('ascii')).hexdigest()
+            hash_of_installation_id = hashlib.sha256(self.installation_id.encode('ascii')).hexdigest()
+            hash_of_sum = hashlib.sha256(
+                (hash_of_cert + hash_of_version + hash_of_installation_id).encode('ascii')).hexdigest()
+            return hash_of_sum[:8]
             
         else:
-            hashOfCert = hashlib.sha1(self.cert).hexdigest()
-            hashOfVersion = hashlib.sha256(self.chromeVersion.encode('ascii')).hexdigest()
-            hashOfInstallationId = hashlib.sha1(self.installation_id.encode('ascii')).hexdigest()
-            hashOfSum = hashlib.sha256((hashOfCert + hashOfVersion + hashOfInstallationId).encode('ascii')).hexdigest()
-            return hashOfSum[-8:]
+            hash_of_cert = hashlib.sha1(self.cert).hexdigest()
+            hash_of_version = hashlib.sha256(self.chrome_version.encode('ascii')).hexdigest()
+            hash_of_installation_id = hashlib.sha1(self.installation_id.encode('ascii')).hexdigest()
+            hash_of_sum = hashlib.sha256(
+                (hash_of_cert + hash_of_version + hash_of_installation_id).encode('ascii')).hexdigest()
+            return hash_of_sum[-8:]
         
-    def generate_third_type_user_agent_magic(self, account_id):
-        firstLetter = self.get_first_number(self.installation_id)
-        firstTwoLettersOfAccountId = account_id[:2]
+    def generate_third_type_user_agent_magic(self, account_id):  # noqa: D102
+        first_letter = self.get_first_number(self.installation_id)
+        first_two_letters_of_account_id = account_id[:2]
         
-        if not firstLetter or not int(firstLetter) % 2:
-            hashOfCert = hashlib.sha256(self.cert).hexdigest()
-            hashOfVersion = hashlib.sha1(self.chromeVersion.encode('ascii')).hexdigest()
-            hashOfInstallationId = hashlib.sha256(self.installation_id.encode('ascii')).hexdigest()
-            hashOfAccountId = hashlib.sha1(account_id.encode('ascii')).hexdigest()
-            hashOfSum = hashlib.sha256(
-                (hashOfCert + hashOfVersion + hashOfInstallationId + hashOfAccountId).encode('ascii')).hexdigest()
-            return firstTwoLettersOfAccountId + hashOfSum[:8]
-        hashOfCert = hashlib.sha1(self.cert).hexdigest()
-        hashOfVersion = hashlib.sha256(self.chromeVersion.encode('ascii')).hexdigest()
-        hashOfInstallationId = hashlib.sha1(self.installation_id.encode('ascii')).hexdigest()
-        hashOfAccountId = hashlib.sha256(account_id.encode('ascii')).hexdigest()
-        hashOfSum = hashlib.sha256(
-            (hashOfCert + hashOfVersion + hashOfInstallationId + hashOfAccountId).encode('ascii')).hexdigest()
-        return firstTwoLettersOfAccountId + hashOfSum[-8:]
+        if not first_letter or not int(first_letter) % 2:
+            hash_of_cert = hashlib.sha256(self.cert).hexdigest()
+            hash_of_version = hashlib.sha1(self.chrome_version.encode('ascii')).hexdigest()
+            hash_of_installation_id = hashlib.sha256(self.installation_id.encode('ascii')).hexdigest()
+            hash_of_account_id = hashlib.sha1(account_id.encode('ascii')).hexdigest()
+            hash_of_sum = hashlib.sha256(
+                (hash_of_cert + hash_of_version + hash_of_installation_id + hash_of_account_id).encode('ascii'),
+            ).hexdigest()
+            return first_two_letters_of_account_id + hash_of_sum[:8]
+        hash_of_cert = hashlib.sha1(self.cert).hexdigest()
+        hash_of_version = hashlib.sha256(self.chrome_version.encode('ascii')).hexdigest()
+        hash_of_installation_id = hashlib.sha1(self.installation_id.encode('ascii')).hexdigest()
+        hash_of_account_id = hashlib.sha256(account_id.encode('ascii')).hexdigest()
+        hash_of_sum = hashlib.sha256(
+            (hash_of_cert + hash_of_version + hash_of_installation_id + hash_of_account_id).encode('ascii'),
+        ).hexdigest()
+        return first_two_letters_of_account_id + hash_of_sum[-8:]
 
-    def get_token(self, account, raw=False):
+    def get_token(self, account, raw=False):  # noqa: D102
         if not self.token:
             return False
         
@@ -208,7 +217,7 @@ class NtLauncher:
 
         ua_magic = self.generate_third_type_user_agent_magic(account)
         HEADERS = {
-            'User-Agent': f'Chrome/{self.chromeVersion} ({ua_magic}) GameforgeClient/{self.gf_version}',
+            'User-Agent': f'Chrome/{self.chrome_version} ({ua_magic}) GameforgeClient/{self.gf_version}',
             'TNT-Installation-Id': self.installation_id,
             'Origin': 'spark://www.gameforge.com',
             'Authorization': f'Bearer {self.token}',
@@ -217,7 +226,7 @@ class NtLauncher:
 
         CONTENT = {
             'platformGameAccountId': account,
-            'gsid': f'{uuid.uuid4()}-{random.randint(1000, 9999)}'
+            'gsid': f'{uuid.uuid4()}-{random.randint(1000, 9999)}',
         }
 
         r = requests.post(URL, headers=HEADERS, json=CONTENT)
